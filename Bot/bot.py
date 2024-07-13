@@ -139,7 +139,7 @@ async def check_deadlines():
 async def periodic_check():
     while True:
         await check_deadlines()
-        await asyncio.sleep(60)
+        await asyncio.sleep(60*60*24) # Каждые 24 часа
 
 
 async def set_commands(bot: Bot):
