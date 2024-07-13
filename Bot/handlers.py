@@ -80,7 +80,7 @@ async def process_email(message: types.Message):
     try:
         valid = validate_email(email)
         email = valid.normalized
-        if email.endswith("@edu.hse.ru") or email.endswith("@gmail.com"):
+        if email.endswith("@edu.hse.ru") or email.endswith("@hse.ru"):
             code = str(random.randint(100000, 999999))
             await send_email(email, "Код подтверждения", f"Ваш код подтверждения: {code}")
 
@@ -150,7 +150,7 @@ async def process_name_and_group(message: types.Message):
                            (name, email, group_id, user_id))
             await message.answer("Вы успешно зарегистрированы как студент. Используйте /menu, чтобы посмотреть доступные команды.")
 
-        elif email.endswith("@gmail.com"):
+        elif email.endswith("@hse.ru"):
             name = message.text.split(';')[0]
             cursor.execute("INSERT INTO Teacher (fullName, email, userid) VALUES (?, ?, ?)", (name, email, user_id))
             await message.answer("Вы успешно зарегистрированы как сотрудник. Используйте /menu, чтобы посмотреть доступные команды.")
@@ -171,7 +171,6 @@ async def show_menu(message: types.Message):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Determine if the user is a student or a teacher
     cursor.execute("SELECT email FROM Student WHERE userid = ?", (user_id,))
     is_student = cursor.fetchone()
     cursor.execute("SELECT email FROM Teacher WHERE userid = ?", (user_id,))
@@ -198,7 +197,7 @@ async def show_menu(message: types.Message):
             resize_keyboard=True
         )
     else:
-        await message.answer("Вы не зарегистрированы. Пожалуйста, используйте /start, чтобы начать испольщовать бот.")
+        await message.answer("Вы не зарегистрированы. Пожалуйста, используйте /start, чтобы начать использовать бот.")
         return
 
     await message.answer("Ваше меню:", reply_markup=markup)
@@ -292,7 +291,6 @@ async def change_group(message: types.Message):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Check if the user is a student
     cursor.execute("SELECT id FROM Student WHERE userid = ?", (user_id,))
     student_result = cursor.fetchone()
 
@@ -310,7 +308,6 @@ async def process_new_group(message: types.Message):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Get the group ID for the new group
     cursor.execute("SELECT id FROM \"Group\" WHERE name = ?", (new_group,))
     group_result = cursor.fetchone()
     if not group_result:
@@ -320,7 +317,6 @@ async def process_new_group(message: types.Message):
     else:
         group_id = group_result[0]
 
-    # Update the student's group
     cursor.execute("UPDATE Student SET groupid = ? WHERE userid = ?", (group_id, user_id))
     conn.commit()
     conn.close()
